@@ -5,13 +5,13 @@
 #include <time.h>
 
 // WiFi 설정
-const char* ssid = "Aksen";
-const char* password = "0725";
+const char* ssid = "Plant";
+const char* password = "0000";
 
 // Adafruit IO MQTT 설정
 #define AIO_SERVER      "io.adafruit.com"
 #define AIO_SERVERPORT  1883
-#define AIO_USERNAME    "BIoT"
+#define AIO_USERNAME    "BIoTy"
 #define AIO_KEY         "aio"
 
 WiFiClient client;
@@ -47,7 +47,7 @@ const long gmtOffset_sec = 9 * 3600;  // 한국 시간: GMT+9
 const int daylightOffset_sec = 0;
 
 bool uploadedThisHour = false;
-//bool ledIsOn = false;  // ⭐️ 현재 LED가 켜져 있는지 추적
+bool ledIsOn = false;  // ⭐️ 현재 LED가 켜져 있는지 추적
 unsigned long uploadDelayStart = 0;
 bool uploadScheduled = false;
 
@@ -95,7 +95,6 @@ void loop() {
 
     // value가 유효한지 먼저 확인
     if (value == nullptr) {
-      //Serial.println("[WARN] MQTT message was null!");
       continue;
     }
 
@@ -107,7 +106,7 @@ void loop() {
     } else if (subscription == &lightFeed) {
       Serial.print("Light: "); Serial.println(value);
       digitalWrite(RELAY_LIGHT, isOn ? HIGH : LOW);
-      //ledIsOn = isOn;  // ⭐️ LED 상태 업데이트
+      ledIsOn = isOn;  // LED 상태 업데이트
     } else if (subscription == &fanFeed) {
       Serial.print("Fan: "); Serial.println(value);
       digitalWrite(RELAY_FAN, isOn ? LOW : HIGH);
@@ -128,14 +127,14 @@ void loop() {
     uploadScheduled = false;  // 다시 초기화
   }
 
-  // ⭐️ 조도 체크해서 LED 끄기 및 OFF 퍼블리시
+  // 조도 체크해서 LED 끄기 및 OFF 퍼블리시
   if (ledIsOn) {
     int lightRaw = analogRead(CDS_PIN);
     int light = 4095 - lightRaw;
-    if (light > 800) {
+    if (light > 2000) {
       Serial.println("[INFO] 조도 높음 - LED OFF 전환");
       digitalWrite(RELAY_LIGHT, LOW);
-      lightAuto.publish("OFF");  // ⭐️ MQTT로 OFF 메시지 전송
+      lightAuto.publish("OFF");  // MQTT로 OFF 메시지 전송
       ledIsOn = false;
     }
   }
